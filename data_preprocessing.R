@@ -3,7 +3,7 @@ library(MASS)
 ###################################################
 #GAS data : 학습에 필요한 초기값이 충분치 않아 임의로 초기값을 부여하는 과정을 거침
 ###################################################
-gas.data.raw = read.csv("/Users/seul/Desktop/2024/etc/sensor_example/GAS.csv", header =TRUE, row.names = 1)
+gas.data.raw = read.csv("C:\\Users\\user\\Desktop\\연구\\3. ADD\\3. Code\\1. 이슬\\GAS.csv", header =TRUE, row.names = 1)
 getwd()
 dim(gas.data.raw)
 head(gas.data.raw)
@@ -44,7 +44,7 @@ plot(new_data[,15],main="GAS")
 ###################################################
 #CO2 data
 ###################################################
-CO2.data.raw = read.csv("/Users/seul/Desktop/2024/etc/sensor_example/CO2.csv", header =TRUE, row.names = 1)
+CO2.data.raw = read.csv("C:\\Users\\user\\Desktop\\연구\\3. ADD\\3. Code\\1. 이슬\\CO2.csv", header =TRUE, row.names = 1)
 head(CO2.data.raw)
 plot(CO2.data.raw[,1], main="CO2")
 
