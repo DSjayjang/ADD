@@ -12,8 +12,6 @@ setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # setting the worksp
 
 source("UsedWavelet.R")
 
-setwd('C:\\Users\\user\\Desktop\\연구\\3. ADD\\3. Code\\4. 이경재')
-
 data1 = read.csv("data_250418/000_Et_H_CO_n.csv", header = FALSE)
 data2 = read.csv("data_250418/002_Et_H_CO_H.csv", header = FALSE)
 data3 = read.csv("data_250418/008_Et_H_CO_L.csv", header = FALSE)
@@ -56,17 +54,12 @@ for(i in 1:n){
   data.arr4[,,i] = data4 + matrix(rnorm(nrow(data4)*ncol(data4), sd = err.sd), nrow(data4), ncol(data4))
 }
 
-
-
-
-
 # data_original: 4개 가스의 모든 관측치를 담은 데이터 행렬
 data_original = array(0, dim = c(nrow(data1), ncol(data1), 4*n))
 data_original[,,1:n] = data.arr1
 data_original[,,n+1:n] = data.arr2
 data_original[,,2*n+1:n] = data.arr3
 data_original[,,3*n+1:n] = data.arr4
-
 
 
 Wave.PCA.Class <- function(data_original, n){
@@ -156,5 +149,7 @@ Wave.PCA.Class <- function(data_original, n){
 }
 
 
+
+
 res = Wave.PCA.Class(data_original, n)
-res
+

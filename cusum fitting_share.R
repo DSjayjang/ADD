@@ -5,12 +5,16 @@ rm(list=ls())
 
 setwd('C:\\Users\\user\\Desktop\\연구\\3. ADD\\3. Code\\1. 이슬')
 gas.data = read.csv("GAS_v2.csv", header =TRUE, row.names = 1)
+dim(gas.data)
 
+rnorm(346*80,0,sd=30)
 gas.data = gas.data+rnorm(346*80,0,sd=30) #noise 추가 : 241015
+gas.data
+
 plot(gas.data[,1])
 
 gas.random = gas.data[, sample(1:ncol(gas.data), 4)]
-
+dim(gas.random)
 
 library(qcc)
 
@@ -18,6 +22,14 @@ library(qcc)
 # cusum
 ###########################################
 # setwd("/Users/seul/Desktop/2024/etc/sensor_example")
+time.labels = rownames(gas.data)
+time.labels[1]
+
+phase1.data=gas.random[c(1:100),1]
+phase2.data = gas.random[c(101:nrow(gas.random)),1]
+
+phase2.cusum = cusum(phase1.data, newdata = phase2.data)
+
 
 for (i in 1:4) {
   
@@ -43,6 +55,9 @@ for (i in 1:4) {
 
   dev.off()
 }
+
+time.labels[start.point]
+
 
 ###########################################
 # 데이터 불러오기 : CO2
@@ -87,3 +102,4 @@ for (i in 1:4) {
   dev.off()
 }
 time.labels[start.point]
+start.point
