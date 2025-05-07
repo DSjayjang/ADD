@@ -1,0 +1,32 @@
+utils.py
+수정함.
+
+def suggest_initial_inducing_tensors(sequences, num_levels, num_inducing, labels=None, increments=False, num_lags=None):
+    Z = []
+    len_inducing = int(num_levels * (num_levels+1) / 2)  # 이 줄을 추가합니다.
+    
+    if labels is not None:
+        classes = np.unique(labels)
+        for c in classes:
+            n_c = np.sum(labels == c)
+            num_inducing_per_class = max(1, int(np.floor(float(n_c) / sequences.shape[0] * num_inducing)))
+            sequences_class = sequences[labels == c]
+            Z.append(_sample_inducing_tensors(sequences_class, num_inducing_per_class, num_levels, increments))
+        num_diff = num_inducing - np.sum([z.shape[0] for z in Z])
+    else:
+        num_diff = num_inducing
+    
+    if num_diff > 0:
+        Z.append(_sample_inducing_tensors(sequences, num_diff, num_levels, increments))
+
+    Z = np.concatenate(Z, axis=0)
+    Z = np.squeeze(Z.reshape([Z.shape[0], len_inducing, -1, Z.shape[-1]]).transpose([1, 0, 2, 3]))
+    
+    if num_lags is not None and num_lags > 0:
+        if increments:
+            Z = np.tile(Z[:, :, :, None, :], (1, 1, 1, num_lags+1, 1)).reshape([Z.shape[0], Z.shape[1], 2, -1])
+        else:
+            Z = np.tile(Z[:, :, :, None, :], (1, 1, num_lags+1, 1)).reshape([Z.shape[0], Z.shape[1], -1])
+    
+    Z += 0.4 * np.random.randn(*Z.shape)
+    return Z
