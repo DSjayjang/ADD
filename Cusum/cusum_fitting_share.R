@@ -3,7 +3,7 @@ rm(list=ls())
 # 데이터 불러오기 : gas
 ###########################################
 
-setwd('C:\\Users\\user\\Desktop\\연구\\3. ADD\\3. Code\\1. 이슬')
+setwd('C:/Users/user/Desktop/add')
 gas.data = read.csv("GAS_v2.csv", header =TRUE, row.names = 1)
 dim(gas.data)
 
@@ -40,7 +40,7 @@ for (i in 1:4) {
   
   start.point = min(c(phase2.cusum$violations$lower, phase2.cusum$violations$upper))
 
-  png(paste0("gas_random2_column_", i, ".png"),width = 1200, height = 800,res=150)
+  # png(paste0("gas_random2_column_", i, ".png"),width = 1200, height = 800,res=150)
   
   plot(gas.random[, i], type = "o", col = "black", xaxt = "n", xlab = "", ylab = "Value",
        main = paste("( sample", i, ")"), pch = 16)
@@ -88,7 +88,7 @@ for (i in 1:4) {
 
   start.point = min(c(phase2.co2cusum$violations$lower, phase2.co2cusum$violation$upper))
   
-  png(paste0("co2_random2_column_", i, ".png"),width = 1200, height = 800,res=150)
+  # png(paste0("co2_random2_column_", i, ".png"),width = 1200, height = 800,res=150)
   
   plot(as.numeric(co2.random[, i]), type = "o", col = "black", xaxt = "n", xlab = "", ylab = "Value",
        main = paste("( sample", i, ")"), pch = 16)
