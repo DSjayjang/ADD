@@ -23,7 +23,7 @@ print('R 객체 리스트:\n', r.ls())
 
 start_point = r['start.point']
 time_labels = r['time.labels']
-detect_time = time_labels[start_point[0]]
+detect_time = time_labels[start_point[0]] # type: str
 
 print('start_point:', start_point[0])
 print('detect_time:', detect_time)
@@ -35,4 +35,3 @@ print('R 객체 리스트:\n', r.ls())
 
 # %%
 r['res_mean1']
-

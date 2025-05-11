@@ -160,4 +160,4 @@ Wave.PCA.Class <- function(data_original, n){
 res = Wave.PCA.Class(data_original, n)
 
 res_mean1 = res$mean1
-res$cov1
+res_mean1
