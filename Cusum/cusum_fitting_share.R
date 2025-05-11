@@ -3,7 +3,9 @@ rm(list=ls())
 # 데이터 불러오기 : gas
 ###########################################
 
-setwd('C:/Users/user/Desktop/add')
+# setwd('C:/Users/user/Desktop/add')
+setwd('C:\\Users\\linde\\Desktop\\add') # labtop
+
 gas.data = read.csv("GAS_v2.csv", header =TRUE, row.names = 1)
 dim(gas.data)
 

@@ -12,7 +12,8 @@ rm(list=ls())
 
 # source("UsedWavelet.R")
 
-setwd('C:\\Users\\user\\Desktop\\add')
+# setwd('C:\\Users\\user\\Desktop\\add') # pcrl
+setwd('C:\\Users\\linde\\Desktop\\add') # labtop
 
 data1 = read.csv("000_Et_H_CO_n.csv", header = FALSE)
 data2 = read.csv("002_Et_H_CO_H.csv", header = FALSE)
