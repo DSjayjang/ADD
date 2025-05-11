@@ -1,39 +1,38 @@
 # %%
-# rpy2 및 환경변수 설정
+import pandas as pd
+import numpy as np
 import os
-# os.environ['R_HOME'] = r'C:\Programming\R\R-4.4.2' # pcrl
-os.environ['R_HOME'] = r'C:\Programming\R\R-4.3.3' # labtop
-
 import rpy2
-print('rpy2 version:', rpy2.__version__)
-
-# %%
 from rpy2.robjects import r
 
-r_path = os.path.abspath(r'C:\Programming\Git\Github\ADD')
+print('rpy2 version:', rpy2.__version__)
 
-# cusum load
-r.source(r_path + '\Cusum\cusum_fitting_share.R')
+# 환경변수 설정
+# PCRL PC
+os.environ['R_HOME'] = r'C:\Programming\R\R-4.4.2'
+r_path = os.path.abspath(r'C:\Programming\Github\ADD')
 
-print('R 객체 리스트:\n', r.ls())
+# # My labtop
+# os.environ['R_HOME'] = r'C:\Programming\R\R-4.3.3'
+# r_path = os.path.abspath(r'C:\Programming\Git\Github\ADD')
 
 # %%
+# cusum load
+r.source(r_path + '\Cusum\cusum_fitting_share.R')
+print('R 객체 리스트:\n', r.ls())
+
 start_point = r['start.point']
 time_labels = r['time.labels']
-
 detect_time = time_labels[start_point[0]]
 
 print('start_point:', start_point[0])
 print('detect_time:', detect_time)
-# %%
-r("print(start.point)")
-# %%
-from rpy2.robjects import r
 
+# %%
 # wavelet pca load
 r.source(r_path + '\Wavelet\ADD_function.R')
-
 print('R 객체 리스트:\n', r.ls())
 
-r['res']
 # %%
+r['res_mean1']
+
