@@ -26,3 +26,12 @@ print('detect_time:', detect_time)
 # %%
 r("print(start.point)")
 # %%
+from rpy2.robjects import r
+
+# wavelet pca load
+r_path = os.path.abspath(r'C:\Programming\Github\ADD\Wavelet')
+r.source(r_path + '\ADD_function.R')
+
+print('R 객체 리스트:\n', r.ls())
+
+r['res']

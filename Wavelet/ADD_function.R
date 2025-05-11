@@ -8,16 +8,16 @@ rm(list=ls())
 # 새로운 자료 x의 분류: 
 #   N(meani, covi)의 pdf에 x를 넣어서 가장 큰 pdf를 가지는 class i로 x를 분류
 ##########################################################################################
-setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # setting the workspace to source file location
+# setwd(dirname(rstudioapi::getActiveDocumentContext()$path)) # setting the workspace to source file location
 
-source("UsedWavelet.R")
+# source("UsedWavelet.R")
 
-setwd('C:\\Users\\user\\Desktop\\연구\\3. ADD\\3. Code\\4. 이경재')
+setwd('C:\\Users\\user\\Desktop\\add')
 
-data1 = read.csv("data_250418/000_Et_H_CO_n.csv", header = FALSE)
-data2 = read.csv("data_250418/002_Et_H_CO_H.csv", header = FALSE)
-data3 = read.csv("data_250418/008_Et_H_CO_L.csv", header = FALSE)
-data4 = read.csv("data_250418/028_Et_H_CO_M.csv", header = FALSE)
+data1 = read.csv("000_Et_H_CO_n.csv", header = FALSE)
+data2 = read.csv("002_Et_H_CO_H.csv", header = FALSE)
+data3 = read.csv("008_Et_H_CO_L.csv", header = FALSE)
+data4 = read.csv("028_Et_H_CO_M.csv", header = FALSE)
 
 data1 = data1[,-(1:3)]
 data1 = as.matrix(data1)
