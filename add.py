@@ -35,3 +35,4 @@ print('R 객체 리스트:\n', r.ls())
 
 # %%
 r['res_mean1']
+r
