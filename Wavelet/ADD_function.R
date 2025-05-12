@@ -12,8 +12,8 @@ rm(list=ls())
 
 # source("UsedWavelet.R")
 
-# setwd('C:/Users/user/Desktop/add') # pcrl
-setwd('C:/Users/linde/OneDrive/Desktop/add') # my
+setwd('C:/Users/user/Desktop/add') # pcrl
+# setwd('C:/Users/linde/OneDrive/Desktop/add') # my
 # setwd('C:/Users/linde/Desktop/add') # labtop
 
 data1 = read.csv("000_Et_H_CO_n.csv", header = FALSE)
