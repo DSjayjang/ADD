@@ -146,12 +146,12 @@ Wave.PCA.Class <- function(data_original, n){
   
   
   # # 분류기에 사용한 자료의 분류 test
-  # x = features_reduced[7+n*2,]
-  # fit.values = c(as.numeric(- 0.5*log(det(cov1)) - 0.5*t(x-mean1) %*% solve(cov1) %*% as.matrix(x-mean1)),
-  #                as.numeric(- 0.5*log(det(cov2)) - 0.5*t(x-mean2) %*% solve(cov2) %*% as.matrix(x-mean2)),
-  #                as.numeric(- 0.5*log(det(cov3)) - 0.5*t(x-mean3) %*% solve(cov3) %*% as.matrix(x-mean3)),
-  #                as.numeric(- 0.5*log(det(cov4)) - 0.5*t(x-mean4) %*% solve(cov4) %*% as.matrix(x-mean4)))
-  # which.max(fit.values); exp(fit.values)/sum(exp(fit.values))
+  x = features_reduced[7+n*2,]
+  fit.values = c(as.numeric(- 0.5*log(det(cov1)) - 0.5*t(x-mean1) %*% solve(cov1) %*% as.matrix(x-mean1)),
+                as.numeric(- 0.5*log(det(cov2)) - 0.5*t(x-mean2) %*% solve(cov2) %*% as.matrix(x-mean2)),
+                as.numeric(- 0.5*log(det(cov3)) - 0.5*t(x-mean3) %*% solve(cov3) %*% as.matrix(x-mean3)),
+                as.numeric(- 0.5*log(det(cov4)) - 0.5*t(x-mean4) %*% solve(cov4) %*% as.matrix(x-mean4)))
+  which.max(fit.values); exp(fit.values)/sum(exp(fit.values))
   
   return(list(mean1=mean1, mean2=mean2, mean3=mean3, mean4=mean4,
               cov1=cov1, cov2=cov2, cov3=cov3, cov4=cov4))
@@ -159,6 +159,6 @@ Wave.PCA.Class <- function(data_original, n){
 
 
 res = Wave.PCA.Class(data_original, n)
-
+res
 res_mean1 = res$mean1
 res_mean1
