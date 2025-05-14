@@ -45,6 +45,8 @@ def main():
     proba2 = mr2.predict_proba(X_train)
     proba3 = mr3.predict_proba(X_train)
     X_meta = np.hstack([proba1, proba2, proba3])
+    print('proba1', proba1)
+    print('proba1', len(proba1))
 
     # 4.5) 메타용 라벨 인코딩
     from sklearn.preprocessing import LabelEncoder

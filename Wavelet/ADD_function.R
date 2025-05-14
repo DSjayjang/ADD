@@ -153,6 +153,13 @@ Wave.PCA.Class <- function(data_original, n){
                 as.numeric(- 0.5*log(det(cov4)) - 0.5*t(x-mean4) %*% solve(cov4) %*% as.matrix(x-mean4)))
   which.max(fit.values); exp(fit.values)/sum(exp(fit.values))
   
+  predicted_label = which.max(fit.values)
+  posterior_probs = exp(fit.values) / sum(exp(fit.values))
+  
+  print(fit.values)
+  print(predicted_label)
+  print(posterior_probs)
+  
   return(list(mean1=mean1, mean2=mean2, mean3=mean3, mean4=mean4,
               cov1=cov1, cov2=cov2, cov3=cov3, cov4=cov4))
 }
@@ -160,5 +167,4 @@ Wave.PCA.Class <- function(data_original, n){
 
 res = Wave.PCA.Class(data_original, n)
 res
-res_mean1 = res$mean1
-res_mean1
+
