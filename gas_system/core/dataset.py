@@ -7,6 +7,7 @@ from torch.utils.data import Dataset
 예: 
 30초에 탐지가 되면, 데이터는 1초 간격으로 업데이트(append)되지만, 
 window size마다 데이터를 보고 결과 출력
+ >> X 아닌듯
 
 '''
 def create_training_windows(X: np.ndarray, y: np.ndarray, window_size: int, step: int = 1):
