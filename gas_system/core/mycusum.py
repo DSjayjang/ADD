@@ -41,7 +41,8 @@ class CUSUMDetector:
         self.k = (self.drift * self.sigma_) / 2.0
         # h = decision.interval * σ₀
         self.h = self.threshold * self.sigma_
-        # 누적합 초기화
+        # 누적합 초기화 
+        # ### 하지만 reset에서 초기화되기 때문에 굳이 필요하진 않음.
         self.S_pos = 0.0
         self.S_neg = 0.0
 
