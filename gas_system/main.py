@@ -7,6 +7,9 @@ import time
 import numpy as np
 import pandas as pd
 
+from core.mycusum import CUSUMDetector
+
+
 # MiniRocket 래퍼
 from models.minirocket_classifier import MiniRocketClassifier
 # GPSig 보류
@@ -61,7 +64,8 @@ def main():
 
     # 6) CUSUM Detector 준비
     cusum = CUSUMDetector(phase1_len=20, threshold=5.0, drift=0.0)
-    cusum.fit(X_raw[:20].mean(axis=1))
+    # cusum.fit(X_raw[:20].mean(axis=1))
+    cusum.fit(X_raw) # my
 
     # 7) 시스템 생성
     system = GasDetectionSystem(
