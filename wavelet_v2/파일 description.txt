@@ -1,0 +1,9 @@
+main.py : 메인 py
+preprocessing.py : 데이터 전처리 py
+waveletclassifier.py : 분류기 클래스 py
+
+코드흐름정리.ipynb : 위의 main, preprocessing, waveletclassifier에 작성된 절차를 주피터노트로 정리
+
+data_250418 폴더 : 예제 데이터 4개가 있다.
+
+이외의 파일들 : 신경쓸 필요없는 캐시파일
