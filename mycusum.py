@@ -78,14 +78,14 @@ class multiCUSUM:
             C_t = np.sum(window - self._mu0, axis = 0)
 
             # 탐지 통계량
-            stat = C_t @ self._inv_cov0 @ C_t.T
+            stat = C_t.T @ self._inv_cov0 @ C_t
             MC_t = max(0, np.sqrt(stat) - self._k * self.n_t)
 
             if MC_t > self._threshold:
                 start_idx = self._phase1_len + t
                 self.violation.append(start_idx)
 
-            # 다음 시점의 n_t 갱신
+            # n_t 업데이드
             if MC_t > 0: self.n_t += 1
             else: self.n_t = 1
 

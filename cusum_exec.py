@@ -5,8 +5,11 @@ import matplotlib.pyplot as plt
 from mycusum import uniCUSUM
 from mycusum import multiCUSUM
 
-os.chdir(r'C:\Users\user\Desktop\add')
+SEED = 2025
+np.random.seed(SEED)
 
+# os.chdir(r'C:\Users\user\Desktop\add') # pcrl
+os.chdir(r'C:\Users\linde\Desktop\add') # laptop
 ######################################################################################
 # 데이터 불러오기 : gas
 ######################################################################################
@@ -76,9 +79,6 @@ phase1_len = 100 # 초기 데이터 길이 (현재는 100행 -> 몇 초 동안 �
 
 cusum = multiCUSUM(phase1_len, threshold)
 cusum.fit(gas_random)
-
-print(cusum._mu0)
-print(cusum._cov0)
 
 violoation = cusum.update(gas_random)
 
