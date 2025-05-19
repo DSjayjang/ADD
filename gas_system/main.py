@@ -7,7 +7,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from core.mycusum import CUSUMDetector
+from core.mycusum_v2 import multiCUSUM
 
 
 # MiniRocket 래퍼
@@ -63,7 +63,7 @@ def main():
     dump(meta_clf, "models/meta_xgb.pkl")
 
     # 6) CUSUM Detector 준비
-    cusum = CUSUMDetector(phase1_len=20, threshold=5.0, drift=0.0)
+    cusum = multiCUSUM(phase1_len=20, threshold=5.0)
     # cusum.fit(X_raw[:20].mean(axis=1))
     cusum.fit(X_raw) # my
 
@@ -90,7 +90,7 @@ def main():
             continue
 
         # 1) CUSUM 변화점 검사
-        raw_change = cusum.update(window.mean(axis=1)[-1])
+        raw_change = cusum.update(window)
         is_change = raw_change and not has_started
         if is_change:
             has_started = True

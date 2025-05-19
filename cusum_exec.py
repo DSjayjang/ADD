@@ -8,8 +8,9 @@ from mycusum import multiCUSUM
 SEED = 2025
 np.random.seed(SEED)
 
-# os.chdir(r'C:\Users\user\Desktop\add') # pcrl
-os.chdir(r'C:\Users\linde\Desktop\add') # laptop
+os.chdir(r'C:\Users\user\Desktop\add') # pcrl
+# os.chdir(r'C:\Users\linde\Desktop\add') # laptop
+
 ######################################################################################
 # 데이터 불러오기 : gas
 ######################################################################################
