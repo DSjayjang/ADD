@@ -1,63 +1,87 @@
 import numpy as np
 
-class CUSUMDetector:
-    def __init__(self, phase1_len=50, threshold=5.0, drift=0.5):
-        """
-        phase1_len: Phase I(기준) 구간 길이 (샘플 수)
-        threshold: decision.interval (σ 단위)
-        drift: se.shift (σ 단위)
-        """
-        self.phase1_len = phase1_len
-        self.threshold = threshold
-        self.drift = drift
-        self.reset()
+class uniCUSUM:
+    def __init__(self, phase1_len=100, threshold=5, delta=0.5):
+        self._delta = float(delta)
+        self._threshold = float(threshold)
+        self._phase1_len = phase1_len
 
-    def reset(self):
-        """내부 상태 초기화"""
-        self.mean_ = None
-        self.sigma_ = None
-        self.k = None
-        self.h = None
-        self.S_pos = 0.0
-        self.S_neg = 0.0
+        # 초기값
+        self._mu0 = None
+        self._sigma = None
+        self._s_prev_pos = 0.0
+        self._s_prev_neg = 0.0
 
-    #####
-    # multivariate로 변경해야함 현재는 그냥 univariate 취급하듯이 전체 센서들의 평균이 구해짐;;
-    #####
+        self.violation_upper = []
+        self.violation_lower = []   
+
+    # Phase 1
     def fit(self, X: np.ndarray):
-        """
-        Phase I 데이터로부터 μ₀, σ₀, k, h 계산
-        X: 1D array-like (phase1_len 길이)
-        """
-        x1 = np.asarray(X, dtype=float)
-        if x1.ndim != 1 or len(x1) < self.phase1_len:
-            raise ValueError("fit()에는 길이 phase1_len 이상의 1D 배열을 넣어야 합니다.")
-        # 기준 구간
-        p1 = x1[:self.phase1_len]
-        self.mean_  = p1.mean() # axis = 0 추가해서 평균벡터로 만들기
-        self.sigma_ = p1.std(ddof=1) # axis = 0 추가해서 공분산 행렬로 만들기
-        # qcc::cusum 매핑
-        # k = se.shift * σ₀ / 2
-        self.k = (self.drift * self.sigma_) / 2.0
-        # h = decision.interval * σ₀
-        self.h = self.threshold * self.sigma_
-        # 누적합 초기화
-        self.S_pos = 0.0
-        self.S_neg = 0.0
+        phase1_data = X[:self._phase1_len]
 
-    def update(self, x: np.ndarray) -> bool:
-        """
-        Phase II 한 점씩 호출
-        x: 단일 관측값 (스칼라)
-        Returns:
-          True  → S_pos > h 이거나 –S_neg > h 이면 (상향/하향 탐지)
-          False → 아직 탐지 아님
-        """
-        if self.mean_ is None:
-            raise RuntimeError("먼저 fit()을 호출하여 Phase I를 설정하세요.")
-        xi = float(x)
-        s = xi - self.mean_ - self.k
-        self.S_pos = max(0.0, self.S_pos + s)
-        self.S_neg = min(0.0, self.S_neg + s)
-        # 상향 또는 하향 임계 초과 여부
-        return (self.S_pos > self.h) or ((-self.S_neg) > self.h)
+        self._mu0 = np.mean(phase1_data)
+        self._sigma = np.std(phase1_data, ddof = 1)
+    
+    # Phase 2
+    def update(self, X: np.ndarray):
+        phase2_X = X[self._phase1_len:]
+
+        for idx, x in enumerate(phase2_X):
+            s_t_pos = max(0.0, self._s_prev_pos + (x - self._mu0 - self._delta/2) / self._sigma)
+            s_t_neg = max(0.0, self._s_prev_neg + (self._mu0 - x - self._delta/2) / self._sigma)
+
+            # 벡터 누적합 업데이트
+            self._s_prev_pos = s_t_pos
+            self._s_prev_neg = s_t_neg
+
+            if self._s_prev_pos > self._threshold:
+                start_idx = self._phase1_len + idx
+                self.violation_upper.append(start_idx)
+
+            if self._s_prev_neg > self._threshold:
+                start_idx = self._phase1_len + idx
+                self.violation_lower.append(start_idx)
+
+        return self.violation_lower, self.violation_upper
+    
+class multiCUSUM:
+    def __init__(self, phase1_len=100, threshold=5, k=1.0):
+        self._k = float(k)
+        self._threshold = float(threshold)
+        self._phase1_len = phase1_len
+
+        # 초기값
+        self._mu0 = []
+        self._cov0 = []
+        self.violation = []
+
+    # Phase 1
+    def fit(self, X: np.ndarray):
+        X = np.asarray(X, dtype=float)
+        phase1_data = X[:self._phase1_len, :]
+
+        self._mu0 = np.mean(phase1_data, axis = 0)
+        self._cov0 = np.cov(phase1_data, rowvar = False)
+
+    # Phase 2
+    def update(self, X: np.ndarray):
+        X = np.asarray(X, dtype=float)
+        # 1D 입력(특징 하나짜리) → (n_samples,1) 로 reshape
+        if X.ndim == 1:
+            X = X.reshape(-1, 1)
+
+        # 변화가 있는지 T/F만 출력하면 됨
+        self.n_t = 1
+        self.C_t = np.zeros(X.shape[1]) # 초기 누적합 벡터
+        self._inv_cov0 = np.linalg.inv(self._cov0)
+
+        # 시점 t에서의 누적합 벡터
+        C_t = np.sum(X - self._mu0, axis = 0)
+
+        # 탐지 통계량
+        stat = C_t.T @ self._inv_cov0 @ C_t
+        MC_t = max(0, np.sqrt(stat) - self._k * self.n_t)
+
+        result = MC_t > self._threshold
+
+        return result

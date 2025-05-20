@@ -1,0 +1,2 @@
+model_checkpoint_path: "svgp_tf"
+all_model_checkpoint_paths: "svgp_tf"

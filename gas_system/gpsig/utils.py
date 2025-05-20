@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.ERROR)
 import gpflow as gp
-# import yaml
+import yaml
 
 def _sample_inducing_tensors(sequences, num_inducing, num_levels, increments):
     Z = []

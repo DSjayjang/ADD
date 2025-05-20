@@ -1,136 +1,72 @@
-from core.dataset import create_training_windows, create_expanding_windows
-from core.cusum import CUSUMDetector
-from core.gas_detection_system import GasDetectionSystem
-from joblib import dump
+# main.py
 import os
 import time
+from pathlib import Path
+
 import numpy as np
-import pandas as pd
 
-from core.mycusum_v2 import multiCUSUM
-
-
-# MiniRocket 래퍼
-from models.minirocket_classifier import MiniRocketClassifier
-# GPSig 보류
-# from models.gpsig_classifier import GPSigClassifier
-
-def load_data_long(file_path: str):
-    df = pd.read_csv(file_path)
-    df.columns = df.columns.str.strip()
-    pivot = df.pivot_table(
-        index=["time", "Label"],
-        columns="Variable",
-        values="Value",
-        aggfunc="first"
-    ).sort_index()
-    X_raw = pivot.to_numpy(dtype=float)
-    y_raw = np.array([lab for (_, lab) in pivot.index], dtype=int)
-    return X_raw, y_raw, {c: c for c in np.unique(y_raw)}
-
+from core.dataset          import load_data_long
+from core.cusum            import multiCUSUM
+from core.gas_detection_system import GasDetectionSystem
+from models.load_base_models   import load_base_models
+from models.load_meta_model    import load_meta_model
 
 def main():
-    # 1) 데이터 불러오기
-    X_raw, y_raw, label_mapping = load_data_long("data/Et_H_CO.csv")
+    # 1) 긴 포맷 CSV 로드
+    X_raw, y_raw, label_map = load_data_long("data/Et_H_CO.csv")
 
-    # 2) 슬라이딩 윈도우 생성
-    window_size = 5
-    X_train, y_train = create_training_windows(X_raw, y_raw, window_size)
+    # 2) 미리 학습된 Base classifiers & Meta classifier 불러오기
+    base_clfs = load_base_models("models")         # [(name, clf), ...]
+    meta      = load_meta_model("models/meta_xgb") # .pkl 또는 .model 자동 감지
 
-    # 3) 미리 학습된 MiniRocket 모델 세 개 로드
-    mr1 = MiniRocketClassifier.load("models/minirocket.pkl")
-    mr2 = MiniRocketClassifier.load("models/minirocket.pkl")
-    mr3 = MiniRocketClassifier.load("models/minirocket.pkl")
-    base_classifiers = [mr1, mr2, mr3]
-
-    # 4) 메타 입력 생성 (mr1, mr2, mr3)
-    proba1 = mr1.predict_proba(X_train)
-    proba2 = mr2.predict_proba(X_train)
-    proba3 = mr3.predict_proba(X_train)
-    X_meta = np.hstack([proba1, proba2, proba3])
-    print('proba1', proba1)
-    print('proba1', len(proba1))
-
-    # 4.5) 메타용 라벨 인코딩
-    from sklearn.preprocessing import LabelEncoder
-    le_meta = LabelEncoder()
-    y_meta = le_meta.fit_transform(y_train)
-
-    # 5) 메타 모델 학습 및 저장
-    from xgboost import XGBClassifier
-    meta_clf = XGBClassifier(use_label_encoder=False, eval_metric="mlogloss")
-    meta_clf.fit(X_meta, y_meta)
-    dump(meta_clf, "models/meta_xgb.pkl")
-
-    # 6) CUSUM Detector 준비
+    # 3) multiCUSUM 초기화 (vector 입력)
     cusum = multiCUSUM(phase1_len=20, threshold=5.0)
-    # cusum.fit(X_raw[:20].mean(axis=1))
-    cusum.fit(X_raw) # my
+    cusum.fit(X_raw[:20])  # 첫 20개 벡터로 Phase-I 학습
 
-    # 7) 시스템 생성
+    # 4) GasDetectionSystem 생성 (CPU-affinity 프로세스 풀 내장)
+    window_size = 5
     system = GasDetectionSystem(
-        base_classifiers=base_classifiers,
-        meta_classifier=meta_clf,
+        base_classifiers=base_clfs,
+        meta_classifier=meta,
         cusum_fn=cusum,
         window_size=window_size,
-        label_mapping=label_mapping,
-        pretrained=True
+        label_mapping=label_map
     )
 
-    # 8) Expanding window으로 추론
-    X_exp, _ = create_expanding_windows(X_raw, y_raw, min_size=1)
-    print(f"▶ Running inference on {len(X_exp)} windows")
-
+    # 5) 실시간 스트리밍 추론
+    print("▶ 실시간 추론 시작")
     has_started = False
-    change_time = None
-    n_features = X_raw.shape[1]
+    t0          = None
+    start_time  = None
 
-    for i, window in enumerate(X_exp):
-        if window.shape[0] % window_size != 0:
+    for t, sample in enumerate(X_raw):
+        # 5-1) 변화점 탐지 (vector 그대로)
+        if not has_started:
+            if cusum.update(sample.reshape(1, -1)):
+                has_started = True
+                t0          = t
+                start_time  = time.time()
+                print(f"[Change point detected at t₀ = {t0}]")
             continue
 
-        # 1) CUSUM 변화점 검사
-        raw_change = cusum.update(window)
-        is_change = raw_change and not has_started
-        if is_change:
-            has_started = True
-            change_time = time.time()
+        # 5-2) 변화점 이후, window_size 간격으로만 추론
+        if (t - t0 + 1) % window_size != 0:
+            continue
 
-        # 2) 분류 모델 추론 (변화 후에만)
-        if has_started:
-            # 전체 파이프라인
-            start = time.time()
-            res = system.run_pipeline(window)
-            total_latency = res["inference_time"]
-            elapsed = time.time() - change_time
-            pred_str = str(res["meta_pred"])
+        # 5-3) t₀ 부터 t까지의 윈도우로 추론
+        window = X_raw[t0 : t + 1]
+        res    = system.run_pipeline_imap(window)
+        elapsed = time.time() - start_time
 
-            # 개별 모델별 latency 측정
-            segments = window.reshape(-1, window_size, n_features)
-            model_times = {}
-            for idx, clf in enumerate(base_classifiers, 1):
-                t0 = time.time()
-                clf.predict_proba(segments)
-                model_times[f"model{idx}"] = time.time() - t0
-            # 빠른 순서대로 정렬
-            sorted_models = sorted(model_times.items(), key=lambda x: x[1])
-            lat_str = ", ".join(f"{name}: {t:.4f}s" for name, t in sorted_models)
-        else:
-            total_latency = 0.0
-            elapsed = 0.0
-            pred_str = "—"
-            lat_str = ""
-
-        # 3) 출력
-        change_str = "🔴 Change" if is_change else ""
-        started_str = "True" if has_started else "False"
         print(
-            f"Window #{i:4d} | {change_str:>12} | Started: {started_str:5} "
-            f"| Pred: {pred_str:<3} | Total Latency: {total_latency:.4f}s "
-            f"| Elapsed: {elapsed:.4f}s"
+            f"window[{t0}→{t}] len={window.shape[0]} | "
+            f"Fastest={res['first_model_name']} "
+            f"(pred={res['first_pred']},"
+            f"time={res['first_time']:.4f}s) | "
+            f"models_latency={res['models_latency']:.4f}s | "
+            f"meta_pred={res['meta_pred']} | "
+            f"elapsed={elapsed:.4f}s"
         )
-        if lat_str:
-            print(f"  ▶ Model latencies (fastest→slowest): {lat_str}")
 
 if __name__ == "__main__":
     main()
