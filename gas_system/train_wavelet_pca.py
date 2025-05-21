@@ -60,7 +60,6 @@ def main():
     # 2) 3D -> 2D for fit: (samples, seq_len, sensors)
     #    X3d: (T, sensors, total) -> X: (total, T, sensors)
     X = np.transpose(X3d, (2, 0, 1))
-
     # 3) Wavelet-PCA 분류기 생성 및 학습
     clf = WaveletPCAClassifier(
         wavelet=WAVELET,

@@ -80,6 +80,7 @@ class GasDetectionSystem:
             core_id = idx % self.n_cores
             tasks.append((core_id, name, clf, segments))
 
+        start_models = time.time()
         # 병렬 predict_proba 실행
         results = self.pool.map(_worker_predict, tasks)
 
@@ -93,9 +94,8 @@ class GasDetectionSystem:
         meta_input = np.hstack(ordered).reshape(1, -1)
         meta_pred = self.meta.predict(meta_input)[0]
 
-        # 베이스 모델 전체 병렬 소요 시간은 최대값으로 정의
-        models_latency = max(d for _, _, d in results)
-
+        # 전체 베이스+메타 소요 시간
+        models_latency = time.time() - start_models
         return {
             'first_model_name': first_name,                       # 가장 빠른 모델 이름
             'first_pred':       int(np.argmax(first_proba)),      # 첫 모델 예측 클래스
@@ -116,6 +116,7 @@ class GasDetectionSystem:
         first_result = None
         results      = []
 
+        start_models = time.time()
         # self.pool은 __init__에서 만들어 두었으니 재사용
         for name, proba, duration in self.pool.imap_unordered(_worker_predict, tasks):
             if first_result is None:
@@ -128,7 +129,9 @@ class GasDetectionSystem:
         ordered    = [probas_map[name] for name, _ in self.base_classifiers]
         meta_input = np.hstack(ordered).reshape(1, -1)
         meta_pred  = self.meta.predict(meta_input)[0]
-        models_latency = max(d for _, _, d in results)
+
+        # 전체 베이스+메타 소요 시간
+        models_latency = time.time() - start_models
 
         return {
             'first_model_name': first_result[0],

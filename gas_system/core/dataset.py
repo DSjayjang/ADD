@@ -1,6 +1,7 @@
 import numpy as np
 from torch.utils.data import Dataset
 import pandas as pd
+from typing import List, Tuple, Dict, Any, Optional
 
 def create_training_windows(X: np.ndarray, y: np.ndarray, window_size: int, step: int = 1):
     if X.ndim == 2 and X.shape[0] < X.shape[1]:
@@ -41,19 +42,43 @@ class GasDataset(Dataset):
     def __getitem__(self, idx):
         return self.windows[idx], self.y[idx]
 
-def load_data_long(file_path: str):
+def load_data_long(file_path: str) -> Tuple[np.ndarray, Optional[np.ndarray], Dict]:
+    """
+    긴 포맷 CSV를 로드하여 Pivot 후 배열 반환하거나,
+    단순 행렬 CSV를 그대로 불러옵니다.
+
+    긴 포맷(CSV에 'time','Label','Variable','Value' 컬럼이 있는 경우):
+      - index=["time","Label"] pivot → X_raw:(T,F), y_raw:(T,), label_map
+
+    그 외(예: 레이블·Value 컬럼 없는 단순 행렬 CSV):
+      - 그냥 DataFrame 전체를 numpy로 반환 → X_raw:(T,F), y_raw=None, label_map={}
+    """
     df = pd.read_csv(file_path)
     df.columns = df.columns.str.strip()
-    pivot = df.pivot_table(
-        index=["time", "Label"],
-        columns="Variable",
-        values="Value",
-        aggfunc="first"
-    ).sort_index()
-    X_raw = pivot.to_numpy(dtype=float)
-    y_raw = np.array([lab for (_, lab) in pivot.index], dtype=int)
-    label_map = {c: c for c in np.unique(y_raw)}
-    return X_raw, y_raw, label_map
+
+    # 긴 포맷인지 검사
+    if {"time", "Variable", "Value"}.issubset(df.columns):
+        # 'Label' 컬럼이 없으면 일단 0으로 채워서 pivot
+        if "Label" not in df.columns:
+            df["Label"] = 0
+
+        pivot = df.pivot_table(
+            index=["time", "Label"],
+            columns="Variable",
+            values="Value",
+            aggfunc="first"
+        ).sort_index()
+
+        X_raw = pivot.to_numpy(dtype=float)
+        y_raw = np.array([lbl for (_, lbl) in pivot.index], dtype=int)
+        label_map = {c: c for c in np.unique(y_raw)}
+        return X_raw, y_raw, label_map
+
+    else:
+        # Value/Variable 포맷이 아니면 그냥 전체 CSV를 배열로 읽어들임
+        arr = df.to_numpy(dtype=float)
+        return arr, None, {}
+
 
 from typing import Optional
 
