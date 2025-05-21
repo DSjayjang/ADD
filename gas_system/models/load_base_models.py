@@ -21,5 +21,5 @@ def load_base_models(model_dir: str):
         ("MR1", mr1),
         ("MR2", mr2),
         ("MR3", mr3),
-        ("WaveletPCA", wavelet_clf),
+        ("WaveletPCA", mr3),
     ]

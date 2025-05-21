@@ -83,6 +83,5 @@ class multiCUSUM:
         MC_t = max(0, np.sqrt(stat) - self._k * self.n_t)
 
         result = MC_t > self._threshold
-        print(result)
 
         return result
