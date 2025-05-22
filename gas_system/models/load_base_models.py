@@ -15,11 +15,11 @@ def load_base_models(model_dir: str):
     mr3 = MiniRocketClassifier.load(model_dir / "minirocket.pkl")
 
     # 2) Wavelet-PCA 모델 불러오기
-    wavelet_clf = WaveletPCAClassifier.load(model_dir / "wavelet_pca.pkl")
+    wavelet_clf = WaveletPCAClassifier.load(model_dir / "wavelet_pca1.pkl")
 
     return [
         ("MR1", mr1),
         ("MR2", mr2),
         ("MR3", mr3),
-        ("WaveletPCA", mr3),
+        ("WaveletPCA", wavelet_clf),
     ]

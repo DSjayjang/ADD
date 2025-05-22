@@ -13,16 +13,16 @@ from typing import List
 # 설정
 DATA_DIR = Path("wavelet/data_250418")
 CSV_FILES = [
-    "000_Et_H_CO_n.csv",
-    "002_Et_H_CO_H.csv",
-    "008_Et_H_CO_L.csv",
-    "028_Et_H_CO_M.csv",
+    "000_Et_H_CO_n_dup.csv",
+    "002_Et_H_CO_H_dup.csv",
+    "008_Et_H_CO_L_dup.csv",
+    "028_Et_H_CO_M_dup.csv",
 ]
 N_PER_CLASS   = 100
 ERROR_SD      = 30.0  # 노이즈 표준편차 (사용 안 함)
 WAVELET       = "db2"
 VAR_THRESHOLD = 0.8
-OUTPUT_PATH   = Path("models/wavelet_pca.pkl")
+OUTPUT_PATH   = Path("models/wavelet_pca1.pkl")
 
 
 def load_and_prepare(data_dir: Path, csv_files: List[str]) -> (np.ndarray, np.ndarray):
